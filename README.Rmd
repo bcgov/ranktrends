@@ -4,25 +4,9 @@ output:
     html_preview: true
 ---
 
-```{r, echo = FALSE}
-knitr::opts_chunk$set(
-  collapse = TRUE,
-  comment = "#>",
-  fig.path = "README-"
-)
-```
 <!-- README.md is generated from README.Rmd. Please edit README.Rmd (this file) -->
 
-```{ r, echo = FALSE}
-knitr::opts_chunk$set(
-  collapse = TRUE,
-  comment = "#>",
-  fig.path = "tools/readme/"
-)
-
-```
-
-# bcgov r badge 
+# Rank Trends 
 <a id="devex-badge" rel="Inspiration" href="https://github.com/BCDevExchange/assets/blob/master/README.md"><img alt="An idea being explored and shaped. Open for discussion, but may never go anywhere." style="border-width:0" src="https://assets.bcdevexchange.org/images/badges/inspiration.svg" title="An idea being explored and shaped. Open for discussion, but may never go anywhere." /></a>
 
 <!-- Add a project state badge
@@ -31,15 +15,15 @@ If you have bcgovr installed and you use RStudio, click the 'Insert BCDevex Badg
 
 ## Overview 
 
-A package to automate and summarise ranking trends for species or groups of species. Ranking systems will be initially focused on NatureServe with expansion to other international standards. 
-
-This package is currently in development stage 
+A [R](http://r-project.org) package to automate and summarise ranks for species or groups of species. Ranking systems will be initially focused on NatureServe with expansion to other international standards. 
 
 ## 
 
 Description of package
 
 ### Features
+
+
 
 ### Installation
 
@@ -54,6 +38,9 @@ This is a basic example which shows you how to solve a common problem:
 ```
 
 ### Project Status
+
+This package is currently in development stage.
+
 
 ### Getting Help or Reporting an Issue
 
