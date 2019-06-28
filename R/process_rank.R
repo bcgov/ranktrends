@@ -75,5 +75,3 @@ make_single_ranks<- function(x) {
     }
   })
 }
-
-use_bcgov_github(organisation = "bcgov",coc_email = "genevieve.perkins@gov.bc.ca")
