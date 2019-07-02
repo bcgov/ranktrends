@@ -1,5 +1,5 @@
 Package: ranktrends
-Title: Summarise species data based on common conservation ranking systems.
+Title: Summarise species data based on common conservation ranking systems
 Version: 0.0.0.9000
 Authors@R: 
     c(person(given = "Genevieve",
@@ -19,7 +19,8 @@ LazyData: true
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 6.1.1
 Imports: 
-    purrr (>= 0.3)
+    purrr (>= 0.3),
+    stats
 Suggests: 
     knitr,
     rmarkdown
