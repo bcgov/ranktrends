@@ -64,7 +64,7 @@ ranks_to_numeric <- function(ranks, simplify = FALSE,
 #' Makes a single rank
 #' @importFrom purrr map_chr
 #' @noRd
-make_single_ranks<- function(x) {
+make_single_ranks <- function(x) {
   map_chr(x, ~ {
     if (length(.x) == 1) {
       .x
