@@ -25,8 +25,7 @@
 #' @export
 #'
 #' @examples
-#' ranks_to_numeric(c("S1","S4","S3S4"))
-#'
+#' ranks_to_numeric(c("S1", "SX", "S2S4"))
 ranks_to_numeric <- function(ranks, simplify = FALSE,
                             round = c ("middle", "up","down")) {
   ## Add argument check
