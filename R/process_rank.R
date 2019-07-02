@@ -36,8 +36,9 @@ ranks_to_numeric <- function(ranks, simplify = FALSE,
   numeric_3 <- gsub("H", "0.5", numeric_2)
   numeric_3[!nzchar(numeric_3)] <- NA_character_
   char_list <- strsplit(numeric_3, "[a-zA-Z]")
-  num_list <- lapply(char_list, as.numeric)
-  num_list <- lapply(num_list, function(x) {
+  # Create numeric vectors
+  num_list <- lapply(char_list, function(x) {
+    x <- as.numeric(x)
     # If just one rank or two adjacent ranks, leave it
     if (length(x) == 1 || abs(diff(x)) == 1) {
       x
