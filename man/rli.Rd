@@ -20,3 +20,6 @@ numeric vector on the scale between 0 and 1.
 \description{
 Calculate status index from numeric status scores
 }
+\examples{
+rli(c(0,2,5,2))
+}

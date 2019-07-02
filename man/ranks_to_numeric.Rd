@@ -2,21 +2,30 @@
 % Please edit documentation in R/process_rank.R
 \name{ranks_to_numeric}
 \alias{ranks_to_numeric}
-\title{Convert S ranks to numeric}
+\title{Convert NatureServe S ranks to numeric}
 \usage{
-ranks_to_numeric(ranks, simplify = TRUE)
+ranks_to_numeric(ranks, simplify = FALSE, round_fun = stats::median)
 }
 \arguments{
 \item{ranks}{character vector of input S ranks}
+
+\item{simplify}{converts list to numeric vector, and rounds range ranks
+using the function supplied to \code{round_fun}. Default = FALSE}
+
+\item{round_fun}{what function to use (default \code{median}) to round range ranks into a single
+value when \code{simplify} is \code{TRUE}. Ignored if simplify is \code{FALSE}.}
 }
 \value{
-a list the same length as \code{ranks} of numeric vectors. For range ranks,
-the vector will be sequence from low to high (e.g.,\code{"S3S5"} becomes \code{c(3,4,5)})
+a list the same length as \code{ranks} of numeric vectors. For range
+ranks, the vector will be sequence from low to high (e.g.,\code{"S3S5"} becomes
+\code{c(3,4,5)})
 }
 \description{
-Converts an rank with S to a single number
+Converts NatureServ S ranks to a number from \code{0} (\code{"SX"}) to \code{5} (\code{"S5"}).
+Historic (\code{"SH"}) is converted to \code{0.5} (i.e., halfway between \code{0} and \code{1}).
+When there are range ranks they are converted to a numeric vector (e.g.,
+\code{"S2S4"} becomes \code{c(2,3,4)})
 }
 \examples{
-ranks_to_numeric(c("S1","S4","S3S4"))
-
+ranks_to_numeric(c("S1", "SX", "S2S4"))
 }
