@@ -29,8 +29,7 @@
 ranks_to_numeric <- function(ranks, simplify = FALSE,
                              round_fun = median) {
   ## Add argument checks
-  ranks_split <- strsplit(ranks, ",\\s?")
-  single_ranks <- make_single_ranks(ranks_split)
+  single_ranks <- make_single_ranks(ranks)
 
   numeric_1 <- gsub("^[^0-9XH]|[^0-9XH]+$", "", single_ranks)
   numeric_2 <- gsub("X", "0", numeric_1)
@@ -62,11 +61,15 @@ ranks_to_numeric <- function(ranks, simplify = FALSE,
 }
 
 
-#' Makes a single rank
+#' Makes a single rank where some ranks might be
+#' 'double-barreled' e.g., breeding/nonbreeding ("S5N,S2B")
 #' @importFrom purrr map_chr
 #' @noRd
-make_single_ranks <- function(x) {
-  map_chr(x, ~ {
+make_single_ranks <- function(ranks) {
+  # split ranks on commas
+  ranks_split <- strsplit(ranks, ",\\s?")
+  # when double-barrelled, choose the breeding rank
+  map_chr(ranks_split, ~ {
     if (length(.x) == 1) {
       .x
     } else {
