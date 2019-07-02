@@ -1,24 +1,26 @@
 Package: ranktrends
-Title: Summarise species data based on common conservation ranking systems.
+Title: Summarise species data based on common conservation ranking systems
 Version: 0.0.0.9000
 Authors@R: 
     c(person(given = "Genevieve",
              family = "Perkins",
-             role = c("aut", "cre")
-             ,given = "Andy",
-             family = "Teucher",
-             role = c("aut", "cre")
+             role = c("aut", "cre"),
              email = "genevieve.perkins@gov.bc.ca"),
+      person(given = "Andy",
+             family = "Teucher",
+             role = "aut",
+             email = "andy.teucher@gov.bc.ca"),
       person(given = "Province of British Columbia",
              role = "cph"))
-Description: This package creates summaries of species groups using international and national ranking systems. This includes NatureServe.
+Description: Creates summaries of species groups using international and national ranking systems. This includes NatureServe.
 License: Apache License (== 2.0) | file LICENSE
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 6.1.1
 Imports: 
-    purrr (>= 0.3)
+    purrr (>= 0.3),
+    stats
 Suggests: 
     knitr,
     rmarkdown
