@@ -8,7 +8,7 @@ Authors@R:
              email = "genevieve.perkins@gov.bc.ca"),
       person(given = "Andy",
              family = "Teucher",
-             role = "aut"
+             role = "aut",
              email = "andy.teucher@gov.bc.ca"),
       person(given = "Province of British Columbia",
              role = "cph"))
