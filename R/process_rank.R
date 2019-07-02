@@ -27,9 +27,8 @@
 #' @examples
 #' ranks_to_numeric(c("S1", "SX", "S2S4"))
 ranks_to_numeric <- function(ranks, simplify = FALSE,
-                            round = c ("middle", "up","down")) {
-  ## Add argument check
-
+                             round_fun = median) {
+  ## Add argument checks
   ranks_split <- strsplit(ranks, ",\\s?")
   single_ranks <- make_single_ranks(ranks_split)
 
@@ -39,7 +38,7 @@ ranks_to_numeric <- function(ranks, simplify = FALSE,
   numeric_3[!nzchar(numeric_3)] <- NA_character_
   char_list <- strsplit(numeric_3, "[a-zA-Z]")
   num_list <- lapply(char_list, as.numeric)
-  lapply(num_list, function(x) {
+  num_list <- lapply(num_list, function(x) {
     # If just one rank or two adjacent ranks, leave it
     if (length(x) == 1 || abs(diff(x)) == 1) {
       x
@@ -52,11 +51,13 @@ ranks_to_numeric <- function(ranks, simplify = FALSE,
   if (simplify) {
     longer_than_one <- purrr::map_lgl(num_list, ~ length(.x) > 1)
 
-    if (any(longer_than_one)){}
-
-    )
+    if (any(longer_than_one)) {
+      num_list[longer_than_one] <- purrr::map_int(num_list[longer_than_one],
+                                                  round_fun)
+    }
     num_list <- unlist(num_list)
   }
+
   num_list
 }
 
