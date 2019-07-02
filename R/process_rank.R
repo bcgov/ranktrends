@@ -32,9 +32,11 @@ ranks_to_numeric <- function(ranks, simplify = FALSE,
   single_ranks <- make_single_ranks(ranks)
 
   numeric_1 <- gsub("^[^0-9XH]|[^0-9XH]+$", "", single_ranks)
+  # Convert SX and SH to 0 and 0.5 respectively
   numeric_2 <- gsub("X", "0", numeric_1)
   numeric_3 <- gsub("H", "0.5", numeric_2)
   numeric_3[!nzchar(numeric_3)] <- NA_character_
+  # Split compound ranks into vectors and conver to numeric
   char_list <- strsplit(numeric_3, "[a-zA-Z]")
   # Create numeric vectors
   num_list <- lapply(char_list, function(x) {
@@ -50,14 +52,12 @@ ranks_to_numeric <- function(ranks, simplify = FALSE,
 
   if (simplify) {
     longer_than_one <- purrr::map_lgl(num_list, ~ length(.x) > 1)
-
     if (any(longer_than_one)) {
-      num_list[longer_than_one] <- purrr::map_int(num_list[longer_than_one],
-                                                  round_fun)
+      rounded <- purrr::map_int(num_list[longer_than_one], round_fun)
+      num_list[longer_than_one] <- rounded
     }
     num_list <- unlist(num_list)
   }
-
   num_list
 }
 
