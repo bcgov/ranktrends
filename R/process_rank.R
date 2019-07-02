@@ -32,7 +32,7 @@
 #' @examples
 #' ranks_to_numeric(c("S1", "SX", "S2S4"))
 ranks_to_numeric <- function(ranks, simplify = FALSE,
-                             round_fun = median) {
+                             round_fun = stats::median) {
   ## Add argument checks
   single_ranks <- make_single_ranks(ranks)
 
