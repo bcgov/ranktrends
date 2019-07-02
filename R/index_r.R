@@ -22,7 +22,7 @@
 #' @export
 #'
 #' @examples
-
+#' rli(c(0,2,5,2))
 rli <- function(w, Wex = 5, N = length(w)) {
   M = Wex * N
   T = sum(w)
