@@ -33,7 +33,19 @@
 #' ranks_to_numeric(c("S1", "SX", "S2S4"))
 ranks_to_numeric <- function(ranks, simplify = FALSE,
                              round_fun = stats::median) {
-  ## Add argument checks
+
+  if (!is.character(ranks)) {
+    stop("'ranks' should be a character vector", call. = FALSE)
+  }
+
+  if (!is.logical(simplify) || length(simplify) != 1L) {
+    stop("simplify should be TRUE or FALSE", call. = FALSE)
+  }
+
+  if (!is.function(round_fun)) {
+    stop("round_fun should be a function", call. = FALSE)
+  }
+
   single_ranks <- make_single_ranks(ranks)
 
   # Remove S/N/G etc from the beginning and end
@@ -58,6 +70,13 @@ ranks_to_numeric <- function(ranks, simplify = FALSE,
       seq(x[1], x[2])
     }
   })
+
+  any_na = purrr::map_lgl(num_list, ~ any(is.na(.x)))
+
+  if (any(any_na)) {
+    warning("Sorry it looks like you have one or more NA values in your input dataset",
+            call. = FALSE)
+  }
 
   if (simplify) {
     # find range ranks (vectors longer than 1)
