@@ -32,12 +32,12 @@ rli <- function(w, Wex = 5, N = length(w)) {
   any_na = purrr::map_lgl(w, ~ any(is.na(.x)))
 
   if (any(any_na)) {
-    warning("Sorry it looks like you have one or more NA values in your input dataset",
+    warning("It looks like you have one or more NA values in your input dataset",
             call. = FALSE)
   }
 
   M = Wex * N
-  T = sum(w)
+  T = sum(w, na.rm = TRUE)
   (M - T) / M
 
 }
