@@ -24,7 +24,20 @@
 #' @examples
 #' rli(c(0,2,5,2))
 rli <- function(w, Wex = 5, N = length(w)) {
+
+  if (is.character(w)) {
+    stop("status scores should be a numeric vector", call. = FALSE)
+  }
+
+  any_na = purrr::map_lgl(w, ~ any(is.na(.x)))
+
+  if (any(any_na)) {
+    warning("Sorry it looks like you have one or more NA values in your input dataset",
+            call. = FALSE)
+  }
+
   M = Wex * N
   T = sum(w)
   (M - T) / M
+
 }
