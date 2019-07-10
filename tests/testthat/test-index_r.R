@@ -13,7 +13,7 @@ test_that("test fails on non character input", {
 
 # this one is not working correctly
 test_that("test for NA data input", {
-#  expect_equal(rli(NA_character_), "numeric" )
+  expect_equal(rli(NA_character_), "numeric" )
   expect_warning(rli(NA_character_),
                  "It looks like you have one or more NA values in your input dataset")
 })
