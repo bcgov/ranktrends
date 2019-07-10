@@ -25,19 +25,23 @@
 #' rli(c(0,2,5,2))
 rli <- function(w, Wex = 5, N = length(w)) {
 
-  if (is.character(w)) {
+  if (!is.numeric(w)) {
     stop("status scores should be a numeric vector", call. = FALSE)
   }
 
-  any_na = purrr::map_lgl(w, ~ any(is.na(.x)))
-
-  if (any(any_na)) {
-    warning("It looks like you have one or more NA values in your input dataset",
+  if (any(is.na(w))) {
+    stop("It looks like you have one or more NA values in your input dataset",
             call. = FALSE)
   }
 
+  if (max(w) > Wex) {
+    stop("Numeric rank must be below the maxiumum weighted score for extinct species",
+            call. = TRUE)
+
+  }
+
   M = Wex * N
-  T = sum(w, na.rm = TRUE)
+  T = sum(w)
   (M - T) / M
 
 }
