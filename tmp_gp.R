@@ -9,55 +9,35 @@ status_data <- read_csv("https://catalogue.data.gov.bc.ca/dataset/4484d4cd-3219-
 
 
 # issues to fix:
-# non-breeding / breeding section needs fixing
+# 1) non-breeding / breeding section needs fixing
     # remove non-ranking species : ?,  SNA?, and  Unranked (U)
     # add paramter to select B or N breeding ranks_to_numeric ie: breeding
     # how to deal with SZN ?
 
-     "S3S4B,SZN" "S5B" "S4B"  "S4S5" "S3S4" "S4?"  "S4S5B"
-[13] "S3B, S4N"  "S4?B"      "SU"     "S3B,S4N"
-   "S3N,S4B"   "S2B"       "S4?B,SZN"  "S5B,S5N"   "S3B,SZN"
-[25] "S2S3B,S4N" "S1B"       "S4S5B,S4N" "SNA"       "S2S3B"     "S2S3"
-[31] "S1S2B"     "S4B,S4N"   "S3N"       "SHN"       "S1N"
-[37] "S2M"       "SH"        "S2B,S3N"   "SNR"           "S3?"
-[43] "S4N"       "S1S2N"     "S1B,SZN"   "S1B,S4N"   "S2B,SZN"   "S4B,SZN"
-[49] "S4N,S5B"   "S3?B,SZN"  "S3S4N,SZN" "S2N,S3B"   "S1B,S3N"   "S5B,SZN"
-[55] "S5B,S4N"   "S4S5B,SZN" "S2B,S4N"   "S3B,S5N"   "S4B,S3N"   "S3B,S2N"
-[61] "S4S5B,S5N" "S4B,S5N"   "S1B,S2N"       "S3B,S3N"   "S5N"
-[67] "SHB,S4N"   "SXB, SNAN" "S2?B"
-
-
-# add unlist error check in rli function
-
+# 2)  unusual calls ( list.to.fix <- c("SNA", "SU" , "SNR"))
 list.to.fix <- c("SNA", "SU" , "SNR")
 
 tdata <- status_data %>%
-   filter(Taxonomic_Group == "Mammals") %>%
-   filter(!SRank %in% list.to.fix)
+  filter(Taxonomic_Group == "Mammals") %>%
+  filter(!SRank %in% list.to.fix)
 
-
+# 3) do we want the output of ranks_to_numeric to be a list? \
 # working
 status_data<- tdata %>%
   mutate(parsed_rank = ranks_to_numeric(SRank, simplify = FALSE))
 
+
 # not working
-status_data<- tdata %>%
+status_data <- tdata %>%
   mutate(parsed_rank = ranks_to_numeric(SRank, simplify = TRUE))
-# getting error with double to interger # line 86?
+
+# 4) getting error with double to interger # line 86?
 #https://stackoverflow.com/questions/55397509/purrrmap-int-cant-coerce-element-1-from-a-double-to-a-integer
 
-unique(tdata$SRank)
-
-
-
-# select the subset of interest:
-
-# 1) group by taxonomic group
-
 status_data_wts <- status_data %>%
-  mutate(parsed_rank = unlist(ranks_to_numeric(SRank)),
-         wts = map(parsed_rank, ~ 5 - .x)) %>%
-  mutate(valid_rank = map_lgl(wts, ~ !all(is.na(.x))))
+  mutate(parsed_rank = ranks_to_numeric(SRank),
+         parsed_rank_single = map_dbl(parsed_rank, min),  # tried to extract 1st value only for testing
+         wts = unlist(map(parsed_rank_single, ~ 5 - .x))) # need to extract the first value
 
 status_complete <- status_data_wts %>%
   group_by(Taxonomic_Group) %>%
@@ -69,12 +49,12 @@ status_complete <- status_data_wts %>%
       filter(all_complete),
     by = c("Taxonomic_Group", "Scientific_Name", "Common_Name"))
 
-species_to_remove <- status_complete %>%
+species_to_remove <- status_data %>%
   filter(Year == min(Year) & SRank == "SX") %>%
   pull(Scientific_Name) %>%
   unique()
 
-status_data_final <- status_complete %>%
+status_data_final <- status_complete  %>%
   filter(!Scientific_Name %in% species_to_remove) %>%
   ungroup() %>%
   mutate(Taxonomic_Group = ifelse(
@@ -82,7 +62,7 @@ status_data_final <- status_complete %>%
     "Reptiles & Amphibians",
     Taxonomic_Group))
 
-plan(multiprocess)
+plan(multiprocess) # Ask Andy about this
 
 csi <- group_by(status_data_final, Taxonomic_Group, Year) %>%
   nest() %>%
@@ -90,7 +70,7 @@ csi <- group_by(status_data_final, Taxonomic_Group, Year) %>%
     N = map_dbl(data, nrow),
     samples = future_map(
       data,
-      ~ replicate(10000,
+      ~ replicate(10, #10000,
                   rli(map_dbl(.x$wts, sample, 1)))
     ),
     mean_wt = map_dbl(samples, mean),
