@@ -83,7 +83,7 @@ ranks_to_numeric <- function(ranks, simplify = FALSE,
     longer_than_one <- purrr::map_lgl(num_list, ~ length(.x) > 1)
     if (any(longer_than_one)) {
       # round using provided round_fun
-      rounded <- purrr::map_int(num_list[longer_than_one], round_fun) # getting error with double to integer
+      rounded <- purrr::map_dbl(num_list[longer_than_one], round_fun) # getting error with double to integer
       num_list[longer_than_one] <- rounded
     }
     num_list <- unlist(num_list)
@@ -106,6 +106,9 @@ make_single_ranks <- function(ranks) {
     } else {
       b <- .x[grepl("B$", .x)]
       if (!length(b)) NA_character_ else b
-    }
+
+    # fix the Breeding and non-breeding formatting
+
+       }
   })
 }
