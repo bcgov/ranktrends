@@ -4,7 +4,7 @@ context("Test the rank conversion function")
 test_that("test for NA data input", {
   expect_equal(suppressWarnings(ranks_to_numeric(NA_character_)), list(NA_real_))
   expect_warning(ranks_to_numeric(NA_character_),
-                 "Sorry it looks like you have one or more NA values in your input dataset")
+                 "There is one or more NA values in your input dataset")
 })
 
 

@@ -74,7 +74,7 @@ ranks_to_numeric <- function(ranks, simplify = FALSE,
   any_na = purrr::map_lgl(num_list, ~ any(is.na(.x)))
 
   if (any(any_na)) {
-    warning("Sorry it looks like you have one or more NA values in your input dataset",
+    warning("There is one or more NA values in your input dataset",
             call. = FALSE)
   }
 
