@@ -1,43 +1,19 @@
 library(tidyverse)
 library(furrr)
 
+install_github("bcgov/ranktrends")
+library(ranktrends)
 
-# https://gist.github.com/ateucher/fc12bebfc189ab39b310d5321307475e
-# Base on Andy T's gist:
+# read in data
+tdata <- read_csv("https://catalogue.data.gov.bc.ca/dataset/4484d4cd-3219-4e18-9a2d-4766fe25a36e/resource/842bcf0f-acd2-4587-a6df-843ba33ec271/download/historicalranksvertebrates1992-2012.csv")
 
-status_data <- read_csv("https://catalogue.data.gov.bc.ca/dataset/4484d4cd-3219-4e18-9a2d-4766fe25a36e/resource/842bcf0f-acd2-4587-a6df-843ba33ec271/download/historicalranksvertebrates1992-2012.csv")
-
-
-# issues to fix:
-# 1) non-breeding / breeding section needs fixing
-    # remove non-ranking species : ?,  SNA?, and  Unranked (U)
-    # add paramter to select B or N breeding ranks_to_numeric ie: breeding
-    # how to deal with SZN ?
-
-# 2)  unusual calls ( list.to.fix <- c("SNA", "SU" , "SNR"))
-list.to.fix <- c("SNA", "SU" , "SNR")
-
-tdata <- status_data %>%
-  # filter(Taxonomic_Group == "Mammals") %>%
-  filter(!SRank %in% list.to.fix)
-
-# 3) do we want the output of ranks_to_numeric to be a list? \
-# working
 status_data <- tdata %>%
   mutate(parsed_rank = ranks_to_numeric(SRank, simplify = FALSE))
 
-
-# not working
-status_data <- tdata %>%
-  mutate(parsed_rank = ranks_to_numeric(SRank, simplify = TRUE))
-
-# 4) getting error with double to interger # line 86?
-#https://stackoverflow.com/questions/55397509/purrrmap-int-cant-coerce-element-1-from-a-double-to-a-integer
-
-status_data_wts <- status_data %>%
-  mutate(parsed_rank = ranks_to_numeric(SRank),
-         parsed_rank_single = map_dbl(parsed_rank, min),  # tried to extract 1st value ? not working
-         wts = unlist(map(parsed_rank_single, ~ 5 - .x))) # need to extract the first value
+#status_data_wts <- status_data %>%
+#  mutate(parsed_rank = ranks_to_numeric(SRank),
+#         parsed_rank_single = map_dbl(parsed_rank, min),  # tried to extract 1st value ? not working
+#         wts = unlist(map(parsed_rank_single, ~ 5 - .x))) # need to extract the first value
 
 status_data_wts <- status_data %>%
   mutate(parsed_rank = ranks_to_numeric(SRank),
@@ -47,13 +23,14 @@ status_data_wts <- status_data %>%
 status_complete <- status_data_wts %>%
   group_by(Taxonomic_Group) %>%
   complete(nesting(Scientific_Name, Common_Name), Year) %>%
-  mutate(valid_rank = map_lgl(wts, ~ !all(is.na(.x)))) %>%
   semi_join(
     group_by(., Taxonomic_Group, Scientific_Name, Common_Name) %>%
-      summarize(all_complete = all(valid_rank)) %>%
+      summarize() %>%
+      #summarize(all_complete = all(valid_rank)) %>%
       filter(all_complete),
     by = c("Taxonomic_Group", "Scientific_Name", "Common_Name"))
 
+# remove those species which are extinct
 species_to_remove <- status_data %>%
   filter(Year == min(Year) & SRank == "SX") %>%
   pull(Scientific_Name) %>%
@@ -69,22 +46,19 @@ status_data_final <- status_complete  %>%
 
 plan(multiprocess)
 
-mammals <- filter(status_data_final, Taxonomic_Group == "Mammals", Year == 1992) %>%
-  mutate(wts_list = map(parsed_rank, ~ 5 - .x))# Ask Andy about this
+status_data_final <- status_data_final %>%
+  filter(!is.na(wts))
 
-rli(purrr::map_dbl(mammals$wts, sample, 1))
-
-mutate(mammals,
-  N = n(),
-  samples = map(wts_list, ~ replicate(100,
-               rli(map_dbl(.x, sample, 1)))),
-  mean_wt = map_dbl(samples, mean),
-  min_wt = map_dbl(samples, min),
-  max_wt = map_dbl(samples, max),
-  lci = map_dbl(samples, quantile, probs = 0.025),
-  uci = map_dbl(samples, quantile, probs = 0.975))
-
-
+csi <- status_data_final %>%
+      mutate(
+       N = n(),
+      samples = map(wts, ~ replicate(10,
+                                    rli(map_dbl(.x, sample, 1)))),
+      mean_wt = map_dbl(samples, mean),
+      min_wt = map_dbl(samples, min),
+      max_wt = map_dbl(samples, max),
+      lci = map_dbl(samples, quantile, probs = 0.025),
+      uci = map_dbl(samples, quantile, probs = 0.975))
 
 csi <- group_by(status_data_final, Taxonomic_Group, Year) %>%
   nest() %>%
@@ -92,7 +66,7 @@ csi <- group_by(status_data_final, Taxonomic_Group, Year) %>%
     N = map_dbl(data, nrow),
     samples = map(
       data,
-      ~ replicate(100,
+      ~ replicate(10,
                   rli(map_dbl(.x$wts, sample, 1)))
     ),
     mean_wt = map_dbl(samples, mean),
@@ -101,10 +75,19 @@ csi <- group_by(status_data_final, Taxonomic_Group, Year) %>%
     lci = map_dbl(samples, quantile, probs = 0.025),
     uci = map_dbl(samples, quantile, probs = 0.975))
 
-ggplot(csi, aes(x = Year)) +
+csi.plot <- csi %>%
+  group_by(Taxonomic_Group, Year) %>%
+  summarize(mean = mean(mean_wt), lci = mean(lci), uci = mean(uci))
+
+
+ggplot(csi.plot, aes(x = Year)) +
   facet_wrap(~Taxonomic_Group) +
-  geom_ribbon(aes(ymin = lci, ymax = uci), fill = "grey80") +
-  geom_line(aes(y = mean_wt))
+  geom_point(aes(y = mean)) +
+  geom_line(aes(y = mean)) +
+  geom_ribbon(aes(ymin=lci,ymax=uci), alpha = 0.2)
+
+
+
 
 # Pseudo-code for desired function
 # rank_data %>%
