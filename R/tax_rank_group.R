@@ -1,3 +1,15 @@
+# Copyright 2019 Province of British Columbia
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and limitations under the License.
+
 
 
 # Pseudo-code for desired function
@@ -9,17 +21,58 @@
 
 # function to automate the rank trends by taxanomic group
 
-# read in data
-tdata <- read_csv("https://catalogue.data.gov.bc.ca/dataset/4484d4cd-3219-4e18-9a2d-4766fe25a36e/resource/842bcf0f-acd2-4587-a6df-843ba33ec271/download/historicalranksvertebrates1992-2012.csv")
-tax_group <- Taxonomic_Group
-species_name <- Scientific_Name
+library(dplyr)
 
 
-# example: tax_trends(tdata, Taxonomic_Group)
+#  wt_data <- status_data_final
+#  tax_group <-'Taxonomic_Group'
+#  wts_col = "wts"
+#  yr_col = "Year"
+
+sampled_index <- function(wt_data, Tax_group, wts_col, yr_col){
+
+  wt_data <- wt_data %>%
+    mutate_(wts = wts_col)
+
+  csi <- group_by_(wt_data, tax_group, yr_col) %>%
+    nest() %>%
+    mutate(
+      N = map_dbl(data, nrow),
+      samples = map(
+        data,
+        ~ replicate(10, rli(map_dbl(.x$wts, sample, 1)))
+      ),
+      mean_wt = map_dbl(samples, mean),
+      min_wt = map_dbl(samples, min),
+      max_wt = map_dbl(samples, max),
+      lci = map_dbl(samples, quantile, probs = 0.025),
+      uci = map_dbl(samples, quantile, probs = 0.975)
+      )
+ csi
+}
+
+
+csi <- sampled_index(wt_data, "Taxanomic_Group","wts","Year")
 
 
 
-tax_trends <- function(rank_data, tax_group, NA = FALSE){
+csi.plot <- csi %>%
+  group_by(Taxonomic_Group, Year) %>%
+  summarize(mean = mean(mean_wt), lci = mean(lci), uci = mean(uci))
+
+
+
+
+rank_plot <- function(plot.data, t_group) { }
+
+ggplot(csi.plot, aes(x = Year)) +
+  facet_wrap(~Taxonomic_Group) +
+  geom_point(aes(y = mean)) +
+  geom_line(aes(y = mean)) +
+  geom_ribbon(aes(ymin=lci,ymax=uci), alpha = 0.2)
+
+
+}
 
 
 
@@ -31,8 +84,6 @@ tax_trends <- function(rank_data, tax_group, NA = FALSE){
 
 # create a function to calculate csi for sub groups
 
-mammals <- status_data_final %>%
-  filter(Taxonomic_Group == "Mammals")
 
 csi <- function(status_data, reps, wts_list, NAs) {
 
