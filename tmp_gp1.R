@@ -1,21 +1,13 @@
 library(tidyverse)
 library(furrr)
 
-install_github("bcgov/ranktrends")
+#install_github("bcgov/ranktrends")
 library(ranktrends)
 
 # read in data
 tdata <- read_csv("https://catalogue.data.gov.bc.ca/dataset/4484d4cd-3219-4e18-9a2d-4766fe25a36e/resource/842bcf0f-acd2-4587-a6df-843ba33ec271/download/historicalranksvertebrates1992-2012.csv")
 
-status_data <- tdata %>%
-  mutate(parsed_rank = ranks_to_numeric(SRank, simplify = FALSE))
-
-#status_data_wts <- status_data %>%
-#  mutate(parsed_rank = ranks_to_numeric(SRank),
-#         parsed_rank_single = map_dbl(parsed_rank, min),  # tried to extract 1st value ? not working
-#         wts = unlist(map(parsed_rank_single, ~ 5 - .x))) # need to extract the first value
-
-status_data_wts <- status_data %>%
+status_data_wts <- tdata %>%
   mutate(parsed_rank = ranks_to_numeric(SRank),
          parsed_rank_single = ranks_to_numeric(SRank, simplify = TRUE, round_fun = min),  # tried to extract 1st value ? not working
          wts = 5 - parsed_rank_single)
@@ -25,10 +17,10 @@ status_complete <- status_data_wts %>%
   complete(nesting(Scientific_Name, Common_Name), Year) %>%
   semi_join(
     group_by(., Taxonomic_Group, Scientific_Name, Common_Name) %>%
-      summarize() %>%
+      summarize()) # %>%
       #summarize(all_complete = all(valid_rank)) %>%
-      filter(all_complete),
-    by = c("Taxonomic_Group", "Scientific_Name", "Common_Name"))
+      #filter(all_complete),
+    #by = c("Taxonomic_Group", "Scientific_Name", "Common_Name"))
 
 # remove those species which are extinct
 species_to_remove <- status_data %>%
