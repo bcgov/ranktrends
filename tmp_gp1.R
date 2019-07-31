@@ -1,7 +1,7 @@
 library(tidyverse)
 library(furrr)
 
-install_github("bcgov/ranktrends")
+#install_github("bcgov/ranktrends")
 library(ranktrends)
 
 # read in data
@@ -25,10 +25,10 @@ status_complete <- status_data_wts %>%
   complete(nesting(Scientific_Name, Common_Name), Year) %>%
   semi_join(
     group_by(., Taxonomic_Group, Scientific_Name, Common_Name) %>%
-      summarize() %>%
+      summarize()) # %>%
       #summarize(all_complete = all(valid_rank)) %>%
-      filter(all_complete),
-    by = c("Taxonomic_Group", "Scientific_Name", "Common_Name"))
+      #filter(all_complete),
+    #by = c("Taxonomic_Group", "Scientific_Name", "Common_Name"))
 
 # remove those species which are extinct
 species_to_remove <- status_data %>%
