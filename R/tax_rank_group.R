@@ -86,7 +86,6 @@ sampled_index <- function(wt_data, tax_group, wts_col, yr_col){
 csi <- sampled_index(status_data_final, "Taxonomic_Group","wts","Year")
 
 
-
 # function to plot calculated data
 rank_plot <- function(plot.data, t_group, yr_col) {
 
