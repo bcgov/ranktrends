@@ -22,16 +22,13 @@
 # function to automate the rank trends by taxanomic group
 
 library(dplyr)
+library(tidyverse)
+library(furrr)
+library(ranktrends)
 
+sampled_index <- function(wt_data, tax_group, wts_col, yr_col){
 
-#  wt_data <- status_data_final
-#  tax_group <-'Taxonomic_Group'
-#  wts_col = "wts"
-#  yr_col = "Year"
-
-sampled_index <- function(wt_data, Tax_group, wts_col, yr_col){
-
-  wt_data <- wt_data %>%
+    wt_data <- wt_data %>%
     mutate_(wts = wts_col)
 
   csi <- group_by_(wt_data, tax_group, yr_col) %>%
@@ -49,63 +46,62 @@ sampled_index <- function(wt_data, Tax_group, wts_col, yr_col){
       uci = map_dbl(samples, quantile, probs = 0.975)
       )
  csi
-}
+
+ }
+
+        #Example data set
+        tdata <- read_csv("https://catalogue.data.gov.bc.ca/dataset/4484d4cd-3219-4e18-9a2d-4766fe25a36e/resource/842bcf0f-acd2-4587-a6df-843ba33ec271/download/historicalranksvertebrates1992-2012.csv")
+
+        status_data_wts <- tdata %>%
+          mutate(parsed_rank = ranks_to_numeric(SRank),
+                 parsed_rank_single = ranks_to_numeric(SRank, simplify = TRUE, round_fun = min),  # tried to extract 1st value ? not working
+                 wts = 5 - parsed_rank_single)
+
+        status_complete <- status_data_wts %>%
+          group_by(Taxonomic_Group) %>%
+          complete(nesting(Scientific_Name, Common_Name), Year) %>%
+          semi_join(
+            group_by(., Taxonomic_Group, Scientific_Name, Common_Name) %>%
+              summarize())
+
+        # remove those species which are extinct
+        species_to_remove <- status_complete %>%
+          filter(Year == min(Year) & SRank == "SX") %>%
+          pull(Scientific_Name) %>%
+          unique()
+
+        status_data_final <- status_complete  %>%
+          filter(!Scientific_Name %in% species_to_remove) %>%
+          ungroup() %>%
+          mutate(Taxonomic_Group = ifelse(
+            Taxonomic_Group %in% c("Amphibians", "Reptiles and Turtles"),
+            "Reptiles & Amphibians",
+            Taxonomic_Group))
+
+        # remove NAs
+        status_data_final <- status_data_final %>%
+          filter(!is.na(wts))
+
+#run function
+csi <- sampled_index(status_data_final, "Taxonomic_Group","wts","Year")
 
 
-csi <- sampled_index(wt_data, "Taxanomic_Group","wts","Year")
 
+# function to plot calculated data
+rank_plot <- function(plot.data, t_group, yr_col) {
 
-
-csi.plot <- csi %>%
-  group_by(Taxonomic_Group, Year) %>%
+csi.plot <- plot.data %>%
+  group_by_(tax_group, yr_col) %>%
   summarize(mean = mean(mean_wt), lci = mean(lci), uci = mean(uci))
 
-
-
-
-rank_plot <- function(plot.data, t_group) { }
-
-ggplot(csi.plot, aes(x = Year)) +
-  facet_wrap(~Taxonomic_Group) +
+ggplot(csi.plot, aes(x =  Year)) + # same issue here as line below
+  #facet_wrap(~ !!!tax_group) +  # how to parse text string as column name
+  facet_wrap(~ Taxonomic_Group) +
   geom_point(aes(y = mean)) +
   geom_line(aes(y = mean)) +
-  geom_ribbon(aes(ymin=lci,ymax=uci), alpha = 0.2)
-
-
+  geom_ribbon(aes(ymin = lci, ymax = uci), alpha = 0.2)
 }
 
-
-
-
-}
-
-
-
-
-# create a function to calculate csi for sub groups
-
-
-csi <- function(status_data, reps, wts_list, NAs) {
-
-  stats_data <- mammals
-  reps = 10
-  wts_list = 'wts'
-  NAs = TRUE
-
-  if (NAs == TRUE) {
-    stats_data  <- stats_data %>%
-      filter(!is.na(wts_list))
-  }
-
-  stats_data <- stats_data %>%
-    mutate(N = n(),
-           samples = map(wts, ~ replicate(reps,
-                                          rli(map_dbl(.x, sample, 1)))),
-           mean_wt = map_dbl(samples, mean),
-           min_wt = map_dbl(samples, min),
-           max_wt = map_dbl(samples, max),
-           lci = map_dbl(samples, quantile, probs = 0.025),
-           uci = map_dbl(samples, quantile, probs = 0.975))
-
-
-}
+#example run
+outplot <- rank_plot(csi, "Taxonomic_Group", "Year")
+outplot
