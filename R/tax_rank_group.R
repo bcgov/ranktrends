@@ -24,7 +24,7 @@
 library(dplyr)
 library(tidyverse)
 library(furrr)
-library(ranktrends)
+#library(ranktrends)
 
 sampled_index <- function(wt_data, tax_group, wts_col, yr_col){
 
@@ -48,6 +48,9 @@ sampled_index <- function(wt_data, tax_group, wts_col, yr_col){
  csi
 
  }
+
+
+library(readr)
 
         #Example data set
         tdata <- read_csv("https://catalogue.data.gov.bc.ca/dataset/4484d4cd-3219-4e18-9a2d-4766fe25a36e/resource/842bcf0f-acd2-4587-a6df-843ba33ec271/download/historicalranksvertebrates1992-2012.csv")
