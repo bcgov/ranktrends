@@ -47,12 +47,12 @@ csi <- sampled_index(status_data_final, "Taxonomic_Group","wts","Year")
 rank_plot <- function(plot.data, t_group, yr_col) {
 
   csi.plot <- plot.data %>%
-    group_by({{t_group}}, {{yr_col}}) %>%
+    group_by_(tax_group, yr_col) %>%
     summarize(mean = mean(mean_wt), lci = mean(lci), uci = mean(uci))
 
-  ggplot(csi.plot, aes(x =  {{yr_col}})) + # same issue here as line below
+  ggplot(csi.plot, aes(x =  Year)) + # same issue here as line below
     #facet_wrap(~ !!!tax_group) +  # how to parse text string as column name
-    facet_wrap(~ {{t_group}}) +
+    facet_wrap(~ Taxonomic_Group) +
     geom_point(aes(y = mean)) +
     geom_line(aes(y = mean)) +
     geom_ribbon(aes(ymin = lci, ymax = uci), alpha = 0.2)
