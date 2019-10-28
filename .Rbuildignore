@@ -3,4 +3,4 @@
 ^README\.Rmd$
 ^CONTRIBUTING\.md$
 ^CODE_OF_CONDUCT\.md$
-^scratch/$
+scratch/
