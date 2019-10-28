@@ -24,21 +24,21 @@
 sampled_index <- function(wt_data, tax_group, wts_col, yr_col){
 
     wt_data <- wt_data %>%
-    mutate_(wts = wts_col)
+    dplyr::mutate_(wts = wts_col)
 
-  csi <- group_by_(wt_data, tax_group, yr_col) %>%
-    nest() %>%
-    mutate(
-      N = map_dbl(data, nrow),
-      samples = map(
+  csi <- dplyr::group_by_(wt_data, tax_group, yr_col) %>%
+    tidyr::nest() %>%
+    dplyr::mutate(
+      N = purrr::map_dbl(data, nrow),
+      samples = purrr::map(
         data,
-        ~ replicate(10, rli(map_dbl(.x$wts, sample, 1)))
+        ~ replicate(10, rli(purrr::map_dbl(.x$wts, sample, 1)))
       ),
-      mean_wt = map_dbl(samples, mean),
-      min_wt = map_dbl(samples, min),
-      max_wt = map_dbl(samples, max),
-      lci = map_dbl(samples, quantile, probs = 0.025),
-      uci = map_dbl(samples, quantile, probs = 0.975)
+      mean_wt = purrr::map_dbl(samples, mean),
+      min_wt = purrr::map_dbl(samples, min),
+      max_wt = purrr::map_dbl(samples, max),
+      lci = purrr::map_dbl(samples, stats::quantile, probs = 0.025),
+      uci = purrr::map_dbl(samples, stats::quantile, probs = 0.975)
       )
  csi
 
