@@ -19,8 +19,12 @@ LazyData: true
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 6.1.1
 Imports: 
+    stats,
+    utils,
     purrr (>= 0.3),
-    stats
+    dplyr (>= 0.8.3),
+    tidyr (>= 1.0),
+    rlang (>= 0.4.1)
 Suggests: 
     knitr,
     rmarkdown,
