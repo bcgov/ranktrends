@@ -2,4 +2,5 @@
 
 export(ranks_to_numeric)
 export(rli)
+export(sampled_index)
 importFrom(purrr,map_chr)
