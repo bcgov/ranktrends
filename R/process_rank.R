@@ -100,7 +100,7 @@ make_single_ranks <- function(ranks) {
   # split ranks on commas (with or without a space)
   ranks_split <- strsplit(ranks, ",\\s?")
   # when double-barrelled, choose the breeding rank
-  map_chr(ranks_split, ~ {
+  purrr::map_chr(ranks_split, ~ {
     if (length(.x) == 1) {
       .x
     } else {
