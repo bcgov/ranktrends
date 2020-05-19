@@ -37,6 +37,7 @@ sampled_index <- function(wt_data, tax_group, wts_col, yr_col, nreps= 1000){
     dplyr::mutate(
       N = purrr::map_dbl(data, nrow),
       # TODO : split rows into double or single ranks - with resample only for double ranks (ie 3,4 not sp with 1 wt)
+      # add a probability (vector corresponding to probability or type ie S1, S2, S3, = c(0.1, 0.8, 0.1))
       samples = purrr::map(
         data,
         ~ replicate(nreps, rli(purrr::map_dbl(.x$wts, sample, 1)))
