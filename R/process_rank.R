@@ -46,7 +46,7 @@ ranks_to_numeric <- function(ranks, simplify = FALSE,
     stop("round_fun should be a function", call. = FALSE)
   }
 
-  single_ranks <- make_single_ranks(ranks)
+  single_ranks <- clean_ranks(ranks)
 
   # Remove S/N/G etc from the beginning and end
   numeric_1 <- gsub("^[^0-9XH]|[^0-9XH]+$", "", single_ranks)
@@ -92,23 +92,40 @@ ranks_to_numeric <- function(ranks, simplify = FALSE,
 }
 
 
-#' Makes a single rank where some ranks might be
-#' 'double-barreled' e.g., breeding/nonbreeding ("S5N,S2B")
+#' Clean messy ranks into simple ranks, converting
+#' ranks with more than one breeding status (e.g., "S5N,S2B") into
+#' single ranks (specified by the `keep` paramater)
 #' @importFrom purrr map_chr
-#' @noRd
-make_single_ranks <- function(ranks) {
-  # split ranks on commas (with or without a space)
-  ranks_split <- strsplit(ranks, ",\\s?")
-  # when double-barrelled, choose the breeding rank
-  purrr::map_chr(ranks_split, ~ {
-    if (length(.x) == 1) {
-      .x
-    } else {
-      b <- .x[grepl("B$", .x)]
-      if (!length(b)) NA_character_ else b
+#' @param ranks a character vector of ranks
+#' @param keep which component to of a rank with multiple ranks for different
+#' breeding statuses. `"B"` = breeding, `"M"` = migratory, `"N"` = non-breeding
+#' @return character vector of cleaned ranks
+#' @export
+#'
+clean_ranks <- function(ranks, keep = "B") {
+  stopifnot(keep %in% c("B", "N", "M"))
+  stopifnot(is.character(ranks))
+  # split double-barreled ranks
+  ranks_split <- strsplit(ranks, "(?<=[0-5XHQ?][NBM]),?(\\s+)?", perl = TRUE)
 
-    # fix the Breeding and non-breeding formatting
+  # clean ranks, when double-barrelled, keeping the specified rank
+  purrr::map_chr(ranks_split, clean_rank, keep)
+}
 
-       }
-  })
+clean_rank <- function(rank, keep) {
+  # If no numeric, X, or H ranks return NA
+  if (!any(grepl("[SNG][0-5HX]", rank))) return(NA_character_)
+
+  non_keeps <- gsub(keep, "", "BNM")
+  if (length(rank) == 1 && !grepl(sprintf("[0-5XHQ?][%s]$", non_keeps), rank)) {
+    ret_rank <- rank
+  } else {
+    ret_rank <- rank[grepl(keep, rank)]
+    if (!length(ret_rank)) {
+      return(NA_character_)
+    }
+  }
+
+  # Strip off C, Q, and breeding qualifier
+  gsub(sprintf("C?Q?%s?$", keep), "", ret_rank)
 }
