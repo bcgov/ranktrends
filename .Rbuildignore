@@ -8,3 +8,4 @@
 ^\.github/workflows/pr-commands\.yaml$
 scratch/
 
+^data-raw$
