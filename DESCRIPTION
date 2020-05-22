@@ -14,10 +14,8 @@ Authors@R:
              role = "cph"))
 Description: Creates summaries of species groups using international and national ranking systems. This includes NatureServe.
 License: Apache License (== 2.0) | file LICENSE
-Encoding: UTF-8
-LazyData: true
-Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.1.0
+Depends: 
+    R (>= 2.10)
 Imports: 
     stats,
     utils,
@@ -33,5 +31,7 @@ Suggests:
 VignetteBuilder: knitr
 URL: https://github.com/bcgov/ranktrends
 BugReports: https://github.com/bcgov/ranktrends/issues
-Depends: 
-    R (>= 2.10)
+Encoding: UTF-8
+LazyData: true
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.1.0
