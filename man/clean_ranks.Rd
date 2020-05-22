@@ -3,7 +3,7 @@
 \name{clean_ranks}
 \alias{clean_ranks}
 \title{Clean messy ranks into simple ranks, converting
-'double-barreled' e.g., breeding/nonbreeding ("S5N,S2B") into
+ranks with more than one breeding status (e.g., "S5N,S2B") into
 single ranks (specified by the \code{keep} paramater)}
 \usage{
 clean_ranks(ranks, keep = "B")
@@ -19,6 +19,6 @@ character vector of cleaned ranks
 }
 \description{
 Clean messy ranks into simple ranks, converting
-'double-barreled' e.g., breeding/nonbreeding ("S5N,S2B") into
+ranks with more than one breeding status (e.g., "S5N,S2B") into
 single ranks (specified by the \code{keep} paramater)
 }
