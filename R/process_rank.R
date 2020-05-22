@@ -88,6 +88,8 @@ ranks_to_numeric <- function(ranks, simplify = FALSE,
 clean_ranks <- function(ranks, keep = "B") {
   stopifnot(keep %in% c("B", "N", "M"))
   stopifnot(is.character(ranks))
+  # remove spaces from ranks
+  ranks <- strip_ws(ranks)
   # split double-barreled ranks
   ranks_split <- strsplit(ranks, "(?<=[0-5XHQ?][NBM]),?(\\s+)?", perl = TRUE)
 
@@ -97,6 +99,7 @@ clean_ranks <- function(ranks, keep = "B") {
 
 clean_rank <- function(rank, keep) {
   # If no numeric, X, or H ranks return NA
+
   if (!any(grepl("[SNG][0-5HX]", rank))) return(NA_character_)
 
   non_keeps <- gsub(keep, "", "BNM")
@@ -111,4 +114,8 @@ clean_rank <- function(rank, keep) {
 
   # Strip off C, Q, and breeding qualifier
   gsub(sprintf("C?Q?%s?$", keep), "", ret_rank)
+}
+
+strip_ws <- function(x) {
+  gsub("\\s*", "", x)
 }
