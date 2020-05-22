@@ -49,9 +49,11 @@ ranks_to_numeric <- function(ranks, simplify = FALSE,
   single_ranks <- clean_ranks(ranks)
 
   num_list <- lapply(single_ranks, function(x) {
-    eval(parse(
-      text = ranks_prob_key$numeric[ranks_prob_key$basic_rank == x]
-    ))
+    as.numeric(
+      eval(parse(
+        text = ranks_prob_key$numeric[ranks_prob_key$basic_rank == x]
+      ))
+    )
   })
 
   any_na = purrr::map_lgl(num_list, ~ any(is.na(.x)))
