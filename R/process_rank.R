@@ -30,7 +30,7 @@
 #' @export
 #'
 #' @examples
-#' ranks_to_numeric(c("S1", "SX", "S2S4"))
+#' ranks_to_numeric(c("S1", "SX", "S2S4", "SH", "S2?"))
 ranks_to_numeric <- function(ranks, simplify = FALSE,
                              round_fun = stats::median) {
 
@@ -48,27 +48,10 @@ ranks_to_numeric <- function(ranks, simplify = FALSE,
 
   single_ranks <- clean_ranks(ranks)
 
-  # Remove S/N/G etc from the beginning and end
-  numeric_1 <- gsub("^[^0-9XH]|[^0-9XH]+$", "", single_ranks)
-
-  # Convert SX and SH to 0 and 0.5 respectively
-  numeric_2 <- gsub("X", "0", numeric_1)
-  numeric_3 <- gsub("H", "0.5", numeric_2)
-  numeric_3[!nzchar(numeric_3)] <- NA_character_
-
-  # Split compound/range ranks into character vectors (split on any letters)
-  char_list <- strsplit(numeric_3, "[a-zA-Z]")
-
-  # Create numeric vectors from character
-  num_list <- lapply(char_list, function(x) {
-    x <- as.numeric(x)
-    # If just one rank or two adjacent ranks, leave it
-    if (length(x) == 1 || abs(diff(x)) == 1) {
-      x
-    } else {
-      # Create a sequence (e.g. S3S5 -> c(3,4,5))
-      seq(x[1], x[2])
-    }
+  num_list <- lapply(single_ranks, function(x) {
+    eval(parse(
+      text = ranks_prob_key$numeric[ranks_prob_key$basic_rank == x]
+    ))
   })
 
   any_na = purrr::map_lgl(num_list, ~ any(is.na(.x)))
