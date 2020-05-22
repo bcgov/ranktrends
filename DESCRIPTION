@@ -33,3 +33,5 @@ Suggests:
 VignetteBuilder: knitr
 URL: https://github.com/bcgov/ranktrends
 BugReports: https://github.com/bcgov/ranktrends/issues
+Depends: 
+    R (>= 2.10)
