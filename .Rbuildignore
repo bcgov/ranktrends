@@ -4,8 +4,8 @@
 ^CONTRIBUTING\.md$
 ^CODE_OF_CONDUCT\.md$
 ^codecov\.yml$
-^\.github/workflows/R-CMD-check\.yaml$
-^\.github/workflows/pr-commands\.yaml$
-scratch/
+^\.github$
+^scratch$
+^COMPLIANCE.yaml$
 
 ^data-raw$
