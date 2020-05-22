@@ -34,6 +34,14 @@ test_that("test the simplify function works", {
                                 round_fun = max), c(1, 0, 4, 1, 3))
 })
 
+test_that("the keep function works", {
+  test_ranks <- c("S1", "SX", "S2S4", "SH", "S2?", "S3B,S2N")
+  expect_equal(ranks_to_numeric(test_ranks),
+               list(1, 0, c(2,3,4), c(0,1), c(1,2,3), 3))
+  expect_equal(ranks_to_numeric(test_ranks, keep = "N"),
+               list(1, 0, c(2,3,4), c(0,1), c(1,2,3), 2))
+})
+
 
 test_that("test fails on non character input", {
   expect_error(ranks_to_numeric(1),"'ranks' should be a character vector")

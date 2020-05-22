@@ -22,6 +22,7 @@
 #' using the function supplied to `round_fun`. Default = FALSE
 #' @param round_fun what function to use (default `median`) to round range ranks into a single
 #' value when `simplify` is `TRUE`. Ignored if simplify is `FALSE`.
+#' @inheritParams clean_ranks
 #'
 #' @return a list the same length as `ranks` of numeric vectors. For range
 #'   ranks, the vector will be sequence from low to high (e.g.,`"S3S5"` becomes
@@ -30,9 +31,10 @@
 #' @export
 #'
 #' @examples
-#' ranks_to_numeric(c("S1", "SX", "S2S4", "SH", "S2?"))
+#' ranks_to_numeric(c("S1", "SX", "S2S4", "SH", "S2?", "S3B,S2N"))
+#' ranks_to_numeric(c("S1", "SX", "S2S4", "SH", "S2?", "S3B,S2N"), keep = "N")
 ranks_to_numeric <- function(ranks, simplify = FALSE,
-                             round_fun = stats::median) {
+                             round_fun = stats::median, keep = "B") {
 
   if (!is.character(ranks)) {
     stop("'ranks' should be a character vector", call. = FALSE)
@@ -46,7 +48,7 @@ ranks_to_numeric <- function(ranks, simplify = FALSE,
     stop("round_fun should be a function", call. = FALSE)
   }
 
-  single_ranks <- clean_ranks(ranks)
+  single_ranks <- clean_ranks(ranks, keep = keep)
 
   num_list <- lapply(single_ranks, function(x) {
     as.numeric(
