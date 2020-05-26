@@ -4,7 +4,12 @@
 \alias{ranks_to_numeric}
 \title{Convert NatureServe S ranks to numeric}
 \usage{
-ranks_to_numeric(ranks, simplify = FALSE, round_fun = stats::median)
+ranks_to_numeric(
+  ranks,
+  simplify = FALSE,
+  round_fun = stats::median,
+  keep = "B"
+)
 }
 \arguments{
 \item{ranks}{character vector of input S ranks}
@@ -14,6 +19,9 @@ using the function supplied to \code{round_fun}. Default = FALSE}
 
 \item{round_fun}{what function to use (default \code{median}) to round range ranks into a single
 value when \code{simplify} is \code{TRUE}. Ignored if simplify is \code{FALSE}.}
+
+\item{keep}{which component to of a rank with multiple ranks for different
+breeding statuses. \code{"B"} = breeding, \code{"M"} = migratory, \code{"N"} = non-breeding}
 }
 \value{
 a list the same length as \code{ranks} of numeric vectors. For range
@@ -27,5 +35,6 @@ When there are range ranks they are converted to a numeric vector (e.g.,
 \code{"S2S4"} becomes \code{c(2,3,4)})
 }
 \examples{
-ranks_to_numeric(c("S1", "SX", "S2S4"))
+ranks_to_numeric(c("S1", "SX", "S2S4", "SH", "S2?", "S3B,S2N"))
+ranks_to_numeric(c("S1", "SX", "S2S4", "SH", "S2?", "S3B,S2N"), keep = "N")
 }

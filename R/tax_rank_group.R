@@ -26,27 +26,27 @@
 #' conservation status index
 #' @export
 #'
+#' @importFrom dplyr .data
 #'
 sampled_index <- function(wt_data, tax_group, wts_col, yr_col, nreps= 1000){
 
-  wt_data <- wt_data %>%
-    dplyr::mutate_(wts = wts_col)
+  wt_data <- dplyr::mutate_(wt_data, wts = wts_col)
 
-  csi <- dplyr::group_by_(wt_data, tax_group, yr_col) %>%
-    tidyr::nest() %>%
-    dplyr::mutate(
-      N = purrr::map_dbl(data, nrow),
+  wt_data <- dplyr::group_by_(wt_data, tax_group, yr_col)
+  wt_data <- tidyr::nest(wt_data)
+  csi <- dplyr::mutate(wt_data,
+      N = purrr::map_dbl(.data$data, nrow),
       # TODO : split rows into double or single ranks - with resample only for double ranks (ie 3,4 not sp with 1 wt)
       # add a probability (vector corresponding to probability or type ie S1, S2, S3, = c(0.1, 0.8, 0.1))
       samples = purrr::map(
-        data,
+        .data$data,
         ~ replicate(nreps, rli(purrr::map_dbl(.x$wts, sample, 1)))
       ),
-      mean_wt = purrr::map_dbl(samples, mean),
-      min_wt = purrr::map_dbl(samples, min),
-      max_wt = purrr::map_dbl(samples, max),
-      lci = purrr::map_dbl(samples, stats::quantile, probs = 0.025), # TODO AT: makes into params
-      uci = purrr::map_dbl(samples, stats::quantile, probs = 0.975)
+      mean_wt = purrr::map_dbl(.data$samples, mean),
+      min_wt = purrr::map_dbl(.data$samples, min),
+      max_wt = purrr::map_dbl(.data$samples, max),
+      lci = purrr::map_dbl(.data$samples, stats::quantile, probs = 0.025), # TODO AT: makes into params
+      uci = purrr::map_dbl(.data$samples, stats::quantile, probs = 0.975)
     )
   csi
 

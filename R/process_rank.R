@@ -22,6 +22,7 @@
 #' using the function supplied to `round_fun`. Default = FALSE
 #' @param round_fun what function to use (default `median`) to round range ranks into a single
 #' value when `simplify` is `TRUE`. Ignored if simplify is `FALSE`.
+#' @inheritParams clean_ranks
 #'
 #' @return a list the same length as `ranks` of numeric vectors. For range
 #'   ranks, the vector will be sequence from low to high (e.g.,`"S3S5"` becomes
@@ -30,9 +31,10 @@
 #' @export
 #'
 #' @examples
-#' ranks_to_numeric(c("S1", "SX", "S2S4"))
+#' ranks_to_numeric(c("S1", "SX", "S2S4", "SH", "S2?", "S3B,S2N"))
+#' ranks_to_numeric(c("S1", "SX", "S2S4", "SH", "S2?", "S3B,S2N"), keep = "N")
 ranks_to_numeric <- function(ranks, simplify = FALSE,
-                             round_fun = stats::median) {
+                             round_fun = stats::median, keep = "B") {
 
   if (!is.character(ranks)) {
     stop("'ranks' should be a character vector", call. = FALSE)
@@ -46,29 +48,14 @@ ranks_to_numeric <- function(ranks, simplify = FALSE,
     stop("round_fun should be a function", call. = FALSE)
   }
 
-  single_ranks <- make_single_ranks(ranks)
+  single_ranks <- clean_ranks(ranks, keep = keep)
 
-  # Remove S/N/G etc from the beginning and end
-  numeric_1 <- gsub("^[^0-9XH]|[^0-9XH]+$", "", single_ranks)
-
-  # Convert SX and SH to 0 and 0.5 respectively
-  numeric_2 <- gsub("X", "0", numeric_1)
-  numeric_3 <- gsub("H", "0.5", numeric_2)
-  numeric_3[!nzchar(numeric_3)] <- NA_character_
-
-  # Split compound/range ranks into character vectors (split on any letters)
-  char_list <- strsplit(numeric_3, "[a-zA-Z]")
-
-  # Create numeric vectors from character
-  num_list <- lapply(char_list, function(x) {
-    x <- as.numeric(x)
-    # If just one rank or two adjacent ranks, leave it
-    if (length(x) == 1 || abs(diff(x)) == 1) {
-      x
-    } else {
-      # Create a sequence (e.g. S3S5 -> c(3,4,5))
-      seq(x[1], x[2])
-    }
+  num_list <- lapply(single_ranks, function(x) {
+    as.numeric(
+      eval(parse(
+        text = ranks_prob_key$numeric[ranks_prob_key$basic_rank == x]
+      ))
+    )
   })
 
   any_na = purrr::map_lgl(num_list, ~ any(is.na(.x)))
@@ -92,23 +79,47 @@ ranks_to_numeric <- function(ranks, simplify = FALSE,
 }
 
 
-#' Makes a single rank where some ranks might be
-#' 'double-barreled' e.g., breeding/nonbreeding ("S5N,S2B")
+#' Clean messy ranks into simple ranks, converting
+#' ranks with more than one breeding status (e.g., "S5N,S2B") into
+#' single ranks (specified by the `keep` paramater)
 #' @importFrom purrr map_chr
-#' @noRd
-make_single_ranks <- function(ranks) {
-  # split ranks on commas (with or without a space)
-  ranks_split <- strsplit(ranks, ",\\s?")
-  # when double-barrelled, choose the breeding rank
-  purrr::map_chr(ranks_split, ~ {
-    if (length(.x) == 1) {
-      .x
-    } else {
-      b <- .x[grepl("B$", .x)]
-      if (!length(b)) NA_character_ else b
+#' @param ranks a character vector of ranks
+#' @param keep which component to of a rank with multiple ranks for different
+#' breeding statuses. `"B"` = breeding, `"M"` = migratory, `"N"` = non-breeding
+#' @return character vector of cleaned ranks
+#' @export
+#'
+clean_ranks <- function(ranks, keep = "B") {
+  stopifnot(keep %in% c("B", "N", "M"))
+  stopifnot(is.character(ranks))
+  # remove spaces from ranks
+  ranks <- strip_ws(ranks)
+  # split double-barreled ranks
+  ranks_split <- strsplit(ranks, "(?<=[0-5XHQ?][NBM]),?(\\s+)?", perl = TRUE)
 
-    # fix the Breeding and non-breeding formatting
+  # clean ranks, when double-barrelled, keeping the specified rank
+  purrr::map_chr(ranks_split, clean_rank, keep)
+}
 
-       }
-  })
+clean_rank <- function(rank, keep) {
+  # If no numeric, X, or H ranks return NA
+
+  if (!any(grepl("[SNG][0-5HX]", rank))) return(NA_character_)
+
+  non_keeps <- gsub(keep, "", "BNM")
+  if (length(rank) == 1 && !grepl(sprintf("[0-5XHQ?][%s]$", non_keeps), rank)) {
+    ret_rank <- rank
+  } else {
+    ret_rank <- rank[grepl(keep, rank)]
+    if (!length(ret_rank)) {
+      return(NA_character_)
+    }
+  }
+
+  # Strip off C, Q, and breeding qualifier
+  gsub(sprintf("C?Q?%s?$", keep), "", ret_rank)
+}
+
+strip_ws <- function(x) {
+  gsub("\\s*", "", x)
 }
