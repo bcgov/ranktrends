@@ -28,7 +28,7 @@
 #'
 #' @importFrom dplyr .data
 #'
-sampled_index <- function(wt_data, tax_group, wts_col, yr_col, nreps= 1000){
+sampled_index <- function(wt_data, by = NULL, nreps= 1000){
 
   wt_data <- dplyr::mutate_(wt_data, wts = wts_col)
 
@@ -51,3 +51,30 @@ sampled_index <- function(wt_data, tax_group, wts_col, yr_col, nreps= 1000){
   csi
 
 }
+
+sampled_index_single <- function(ranks, n) {
+  ranks_list <- lapply(rank_info(ranks), function(x) x[["prob_vec"]])
+  replicate(n, rli(purrr::map_dbl(ranks_list, ~ {
+    sample(as.numeric(names(.x)), size = 1, prob = .x)
+  })))
+
+}
+
+rank_info <- function(ranks = NULL) {
+  s <- split(ranks_prob_key,
+             ranks_prob_key[["basic_rank"]])
+  all_ranks <- lapply(s, function(x) {
+    list(
+      numeric = x[["numeric"]],
+      prob_vec = setNames(
+        as.numeric(
+          t(x[c("p_0", "p_1", "p_2", "p_3", "p_4", "p_5")])
+        ),
+        0:5
+      )
+    )
+  })
+  if (is.null(ranks)) return(all_ranks)
+  all_ranks[ranks]
+}
+
